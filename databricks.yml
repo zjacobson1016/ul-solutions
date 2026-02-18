@@ -1,0 +1,36 @@
+bundle:
+  name: ul-solutions-equipment-certification
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    default: "mfg_mc_se_sa"
+  schema:
+    default: "ul_solutions"
+  warehouse_id:
+    lookup:
+      warehouse: "Serverless Starter Warehouse"
+  volume_name:
+    default: "raw_data"
+
+targets:
+  dev:
+    default: true
+    mode: development
+    workspace:
+      host: https://fevm-mfg-mc-se-sa.cloud.databricks.com
+      profile: group-demo
+    variables:
+      catalog: "mfg_mc_se_sa"
+      schema: "ul_solutions"
+
+  prod:
+    mode: production
+    workspace:
+      host: https://fevm-mfg-mc-se-sa.cloud.databricks.com
+      profile: group-demo
+    variables:
+      catalog: "mfg_mc_se_sa"
+      schema: "ul_solutions"

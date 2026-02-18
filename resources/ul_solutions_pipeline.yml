@@ -1,0 +1,30 @@
+resources:
+  pipelines:
+    ul_solutions_equipment_pipeline:
+      name: "[${bundle.target}] UL Solutions Equipment Certification Pipeline"
+
+      catalog: ${var.catalog}
+      target: ${var.schema}
+
+      libraries:
+        - glob:
+            include: ../src/pipeline/transformations/**
+
+      root_path: ../src/pipeline
+
+      serverless: true
+      channel: PREVIEW
+
+      configuration:
+        volume_path: "/Volumes/${var.catalog}/${var.schema}/${var.volume_name}/equipment_docs/"
+        structured_data_path: "/Volumes/${var.catalog}/${var.schema}/${var.volume_name}/structured_data"
+        catalog_name: "${var.catalog}"
+        schema_name: "${var.schema}"
+
+      continuous: false
+      development: true
+      photon: true
+
+      permissions:
+        - level: CAN_VIEW
+          group_name: "users"

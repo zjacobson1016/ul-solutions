@@ -1,0 +1,13 @@
+# Generated PDFs (re-create via setup job)
+generated_pdfs/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+.DS_Store
+
+# Databricks
+.databricks/

@@ -1,0 +1,50 @@
+resources:
+  jobs:
+    ul_solutions_setup:
+      name: "[${bundle.target}] UL Solutions - Setup & Data Generation"
+
+      environments:
+        - environment_key: "pdf_gen_env"
+          spec:
+            client: "4"
+            dependencies:
+              - "reportlab"
+
+      tasks:
+        - task_key: "generate_and_upload_pdfs"
+          description: "Generate synthetic equipment certification PDFs and upload to UC Volume"
+          environment_key: "pdf_gen_env"
+          notebook_task:
+            notebook_path: ../src/notebooks/00_setup_generate_pdfs.py
+            source: WORKSPACE
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              volume_name: ${var.volume_name}
+
+        - task_key: "generate_structured_data"
+          depends_on:
+            - task_key: "generate_and_upload_pdfs"
+          description: "Generate structured operational data as parquet files in UC Volume"
+          notebook_task:
+            notebook_path: ../src/notebooks/02_generate_structured_data.py
+            source: WORKSPACE
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              volume_name: ${var.volume_name}
+
+        - task_key: "create_metric_view"
+          depends_on:
+            - task_key: "generate_structured_data"
+          description: "Create the equipment certification Metric View"
+          notebook_task:
+            notebook_path: ../src/notebooks/01_create_metric_view.py
+            source: WORKSPACE
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+
+      permissions:
+        - level: CAN_VIEW
+          group_name: "users"
