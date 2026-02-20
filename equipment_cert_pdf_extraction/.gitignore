@@ -11,3 +11,6 @@ __pycache__/
 
 # Databricks
 .databricks/
+
+# Cloned MCP servers (not part of bundle)
+excalidraw-mcp/

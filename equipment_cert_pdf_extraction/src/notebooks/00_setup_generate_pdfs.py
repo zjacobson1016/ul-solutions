@@ -43,9 +43,9 @@ print(f"Volume path ready: {volume_path}")
 # COMMAND ----------
 
 import os
+import io
 import random
 import math
-import tempfile
 from pathlib import Path
 
 from reportlab.lib.pagesizes import letter
@@ -192,7 +192,7 @@ def create_equipment_diagram(width=400, height=200, eq_type=""):
     return d
 
 
-def generate_equipment_pdf(output_dir, doc_index):
+def generate_equipment_pdf(doc_index):
     eq_type_name, eq_prefix = random.choice(EQUIPMENT_TYPES)
     manufacturer = random.choice(MANUFACTURERS)
     model = random_model_number(eq_prefix)
@@ -208,10 +208,10 @@ def generate_equipment_pdf(output_dir, doc_index):
     cert_status = random.choices(["PASS", "CONDITIONAL", "PASS", "PASS"], weights=[6, 2, 1, 1])[0]
 
     filename = f"UL_Cert_{cert_id.replace('-', '_')}_{model.replace('-', '_')}.pdf"
-    filepath = os.path.join(output_dir, filename)
 
+    pdf_buffer = io.BytesIO()
     doc = SimpleDocTemplate(
-        filepath, pagesize=letter,
+        pdf_buffer, pagesize=letter,
         leftMargin=0.75 * inch, rightMargin=0.75 * inch,
         topMargin=0.75 * inch, bottomMargin=0.75 * inch
     )
@@ -482,8 +482,10 @@ def generate_equipment_pdf(output_dir, doc_index):
     ))
 
     doc.build(story)
-    return {"filename": filename, "filepath": filepath, "equipment_name": eq_type_name,
-            "model_number": model, "manufacturer": manufacturer, "certification_id": cert_id,
+    pdf_buffer.seek(0)
+    return {"filename": filename, "pdf_bytes": pdf_buffer.getvalue(),
+            "equipment_name": eq_type_name, "model_number": model,
+            "manufacturer": manufacturer, "certification_id": cert_id,
             "certification_status": cert_status}
 
 
@@ -494,35 +496,20 @@ def generate_equipment_pdf(output_dir, doc_index):
 
 # COMMAND ----------
 
-import shutil
-
-tmp_dir = tempfile.mkdtemp(prefix="ul_certs_")
-print(f"Generating {NUM_DOCS} equipment certification PDFs...")
+volume_dest = f"/Volumes/{catalog}/{schema}/{volume_name}/equipment_docs"
+print(f"Generating {NUM_DOCS} equipment certification PDFs directly to {volume_dest}/...")
 
 docs = []
 for i in range(NUM_DOCS):
-    meta = generate_equipment_pdf(tmp_dir, i)
+    meta = generate_equipment_pdf(i)
+    dest_path = f"{volume_dest}/{meta['filename']}"
+    with open(dest_path, "wb") as f:
+        f.write(meta["pdf_bytes"])
+    del meta["pdf_bytes"]
     docs.append(meta)
     print(f"  [{i + 1}/{NUM_DOCS}] {meta['filename']} — {meta['equipment_name']} ({meta['manufacturer']})")
 
-print(f"\nGenerated {NUM_DOCS} PDFs in temp directory")
-
-# COMMAND ----------
-
-# Upload to UC Volume
-volume_dest = f"/Volumes/{catalog}/{schema}/{volume_name}/equipment_docs"
-uploaded = 0
-for meta in docs:
-    src = meta["filepath"]
-    dst = f"{volume_dest}/{meta['filename']}"
-    dbutils.fs.cp(f"file:{src}", dst)
-    uploaded += 1
-    print(f"  Uploaded: {meta['filename']}")
-
-print(f"\nUploaded {uploaded} PDFs to {volume_dest}")
-
-# Clean up temp directory
-shutil.rmtree(tmp_dir, ignore_errors=True)
+print(f"\nWrote {NUM_DOCS} PDFs to {volume_dest}")
 
 # COMMAND ----------
 

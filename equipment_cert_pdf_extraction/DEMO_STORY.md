@@ -20,8 +20,8 @@ Genie returns an instant, governed answer — pulled from a Metric View that def
 
 Follow up live:
 
-- *"Which manufacturers have conditional certifications?"*
-- *"Show me all equipment at the Chicago Manufacturing Complex with overdue inspections"*
+- *"Which manufacturer has the switchgear assembly not passing 100"*
+- *"Why are the conditional certs for Schneider Eletric?"*
 - *"What's the total maintenance cost by facility?"*
 - *"Which equipment has conditional certifications AND open work orders?"*
 
@@ -35,7 +35,7 @@ Follow up live:
 
 Now the same compliance manager needs to go deeper. Genie told her there's a conditional certification. She needs to understand *why*. She asks the Knowledge Assistant:
 
-> *"Why are the conditional certs for ABB Power Solutions Power Distribution Unit?"*
+> *"Why are the conditional certs for Schneider Eletric?"*
 
 The Knowledge Assistant retrieves the answer directly from the source PDF — the actual certification report sitting in a Unity Catalog Volume — and cites the specific section.
 

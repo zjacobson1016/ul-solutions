@@ -45,6 +45,18 @@ resources:
               catalog: ${var.catalog}
               schema: ${var.schema}
 
+        - task_key: "create_agent_bricks"
+          depends_on:
+            - task_key: "create_metric_view"
+          description: "Create Knowledge Assistant, look up Genie Space, and create Multi-Agent Supervisor"
+          notebook_task:
+            notebook_path: ../src/notebooks/03_create_agent_bricks.py
+            source: WORKSPACE
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              volume_name: ${var.volume_name}
+
       permissions:
         - level: CAN_VIEW
           group_name: "users"
