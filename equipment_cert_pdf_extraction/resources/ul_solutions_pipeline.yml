@@ -8,15 +8,15 @@ resources:
 
       libraries:
         - glob:
-            include: ../src/pipeline/transformations/**
+            include: ../src/pipeline_test/transformations/**
 
-      root_path: ../src/pipeline
+      root_path: ../src/pipeline_test
 
       serverless: true
       channel: PREVIEW
 
       configuration:
-        volume_path: "/Volumes/${var.catalog}/${var.schema}/${var.volume_name}/equipment_docs/"
+        volume_path: "/Volumes/${var.catalog}/${var.schema}/${var.volume_name}/ul_docs/"
         structured_data_path: "/Volumes/${var.catalog}/${var.schema}/${var.volume_name}/structured_data"
         catalog_name: "${var.catalog}"
         schema_name: "${var.schema}"

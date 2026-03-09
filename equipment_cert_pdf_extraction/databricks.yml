@@ -2,7 +2,7 @@ bundle:
   name: ul-solutions-equipment-certification
 
 include:
-  - resources/*.yml
+  - resources/ul_solutions_pipeline.yml
 
 variables:
   catalog:
