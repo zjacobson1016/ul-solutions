@@ -1,0 +1,25 @@
+# Spark Declarative Pipeline: SharePoint PDF bronze + ai_parse silver
+
+resources:
+  pipelines:
+    sharepoint_ingestion_etl:
+      name: sharepoint_ingestion_etl
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+      serverless: true
+      edition: ADVANCED
+      channel: CURRENT
+      root_path: "../src/sharepoint_ingestion_etl"
+
+      configuration:
+        sharepoint_url: "https://7wplqh.sharepoint.com/sites/ragaas-test/Shared%20Documents/Forms/AllItems.aspx"
+        sharepoint_connection: sharepoint_test
+        schema_location_base: /Volumes/${var.catalog}/${var.schema}/sharepoint_ingestion_metadata/schemas
+
+      libraries:
+        - glob:
+            include: ../src/sharepoint_ingestion_etl/transformations/**
+
+      environment:
+        dependencies:
+          - --editable ${workspace.file_path}
