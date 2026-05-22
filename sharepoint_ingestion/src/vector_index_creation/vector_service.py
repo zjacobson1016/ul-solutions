@@ -1,7 +1,8 @@
 """Vector Search lifecycle via the Databricks SDK.
 
 Creates/finds a Vector Search endpoint and a delta-sync index whose source is
-the gold streaming table produced by the SDP pipeline.
+the ``gold_search_chunks`` streaming table produced by
+``sharepoint_ingestion_etl`` (see ``transformations/gold_search_chunks.py``).
 """
 
 from __future__ import annotations
@@ -25,6 +26,11 @@ from .models import (
     VectorSearchEndpointResponse,
     VectorSearchIndexRequest,
     VectorSearchIndexResponse,
+    default_gold_index_request,
+)
+from .models import (
+    GOLD_EMBEDDING_COLUMN,
+    GOLD_PRIMARY_KEY,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -132,8 +138,46 @@ class VectorSearchService:
         )
 
     # ------------------------------------------------------------------
-    # Index
+    # Index (gold_search_chunks)
     # ------------------------------------------------------------------
+
+    def get_or_create_gold_index(
+        self,
+        catalog: str,
+        schema: str,
+        endpoint_name: str,
+        *,
+        index_name: Optional[str] = None,
+        embedding_model_endpoint_name: str = "databricks-gte-large-en",
+        pipeline_type: str = "TRIGGERED",
+    ) -> VectorSearchIndexResponse:
+        """Create or return a delta-sync index on ``gold_search_chunks``.
+
+        Uses ``chunk_id`` as the primary key and ``chunk_to_embed`` for
+        embeddings, matching the gold table schema in the SDP pipeline.
+        """
+        req = default_gold_index_request(catalog, schema, endpoint_name, index_name)
+        if (
+            embedding_model_endpoint_name != req.embedding_model_endpoint_name
+            or pipeline_type != req.pipeline_type
+        ):
+            req = VectorSearchIndexRequest(
+                index_name=req.index_name,
+                endpoint_name=req.endpoint_name,
+                source_table=req.source_table,
+                primary_key=GOLD_PRIMARY_KEY,
+                embedding_source_column=GOLD_EMBEDDING_COLUMN,
+                embedding_model_endpoint_name=embedding_model_endpoint_name,
+                pipeline_type=pipeline_type,
+            )
+        _LOGGER.info(
+            "Gold index target: %s (table=%s, pk=%s, embed_col=%s)",
+            req.index_name,
+            req.source_table,
+            GOLD_PRIMARY_KEY,
+            GOLD_EMBEDDING_COLUMN,
+        )
+        return self.get_or_create_index(req)
 
     def get_or_create_index(
         self, req: VectorSearchIndexRequest
